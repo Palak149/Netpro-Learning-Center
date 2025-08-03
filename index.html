@@ -1,351 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetPro Learning Center</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Three.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        /* General body styles, theme-aware */
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden;
-            @apply bg-gray-100 text-gray-800; /* Light mode defaults */
-        }
-        body.dark {
-            @apply bg-gray-900 text-gray-100; /* Dark mode styles */
-        }
-        
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-        
-        main {
-            position: relative;
-            z-index: 1;
-            padding: 2rem 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NetPro Learning Center</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-        /* Base styles for the content boxes */
-        .content-box {
-            @apply max-w-4xl mx-auto rounded-lg shadow-xl p-8 mb-8 bg-white bg-opacity-70; /* Light mode defaults */
-            transition: background-color 0.3s, color 0.3s;
-        }
-        body.dark .content-box {
-            @apply bg-gray-800 bg-opacity-70; /* Dark mode styles */
-        }
-        
-        .toggle-button {
-            position: fixed;
-            top: 1rem;
-            z-index: 100;
-            cursor: pointer;
-            border: none;
-            padding: 0.75rem;
-            border-radius: 9999px;
-            font-weight: 700;
-            transition: transform 0.2s, background-color 0.2s;
-            @apply bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
-        }
-        
-        .toggle-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .toggle-button:nth-child(1) { right: 1rem; }
-        .toggle-button:nth-child(2) { right: 5.5rem; }
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-        /* Icon styles for the theme toggle */
-        .theme-icon {
-            width: 1.5rem;
-            height: 1.5rem;
-        }
-    </style>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+      @apply bg-gray-100 text-gray-800;
+    }
+    body.dark {
+      @apply bg-gray-900 text-gray-100;
+    }
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+    main {
+      position: relative;
+      z-index: 1;
+      padding: 2rem 0;
+    }
+    .content-box {
+      @apply max-w-4xl mx-auto rounded-lg shadow-xl p-8 mb-8 bg-white bg-opacity-70 backdrop-blur-md;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark .content-box {
+      @apply bg-gray-800 bg-opacity-70 backdrop-blur-md;
+    }
+    .toggle-button {
+      position: fixed;
+      top: 1rem;
+      z-index: 100;
+      cursor: pointer;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      transition: transform 0.2s, background-color 0.2s;
+      @apply bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2;
+    }
+    .toggle-button:hover {
+      transform: scale(1.05);
+    }
+    .toggle-button:nth-child(1) { right: 1rem; }
+    .toggle-button:nth-child(2) { right: 5.5rem; }
+    .theme-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  </style>
 </head>
+
 <body class="selection:bg-indigo-500 selection:text-white">
 
-    <!-- Toggle button for the 3D canvas -->
-    <button id="toggle3DButton" class="toggle-button">
-        Toggle 3D
-    </button>
-    <!-- Toggle button for the theme -->
-    <button id="toggleThemeButton" class="toggle-button">
-        <svg id="theme-icon" class="theme-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-            <!-- Sun icon for light mode -->
-            <path id="sun-path" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.071 5.071a1 1 0 000-1.414l-.707-.707a1 1 0 10-1.414 1.414l.707.707a1 1 0 001.414 0zm1.414 8.485a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 011.414-1.414l.707.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1z" clip-rule="evenodd"></path>
-            <!-- Moon icon for dark mode -->
-            <path id="moon-path" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clip-rule="evenodd" class="hidden"></path>
-        </svg>
-    </button>
+  <!-- Toggle Buttons -->
+  <button id="toggle3DButton" class="toggle-button" aria-label="Toggle 3D background">Toggle 3D</button>
+  <button id="toggleThemeButton" class="toggle-button" aria-label="Toggle dark or light theme">
+    <svg id="theme-icon" class="theme-icon" fill="currentColor" viewBox="0 0 20 20">
+      <path id="sun-path" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
+      <path id="moon-path" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clip-rule="evenodd" class="hidden"></path>
+    </svg>
+  </button>
 
-    <!-- Container for the Three.js canvas -->
-    <div id="canvas-container"></div>
-    
-    <div id="box1" class="p-8">
-        <main>
-            <header>
-                <nav class="flex flex-col sm:flex-row justify-between items-center bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 p-4 rounded-lg shadow-xl mb-8">
-                    <h1 class="text-3xl font-bold text-indigo-700 dark:text-indigo-400">NetPro Learning Center</h1>
-                    <ul class="flex flex-wrap justify-center sm:justify-end gap-4 mt-4 sm:mt-0">
-                        <li><a href="#home" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white">Home</a></li>
-                        <li><a href="#about" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white">About Us</a></li>
-                        <li><a href="#services" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white">Services</a></li>
-                        <li><a href="#review" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white">Reviews</a></li>
-                        <li><a href="#contact" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 transition-colors text-white">Contact Us</a></li>
-                    </ul>
-                </nav>
-            </header>
-        </main>
-    </div>
+  <!-- Three.js Canvas -->
+  <div id="canvas-container"></div>
 
-    <div id="box2" class="p-8">
-        <main class="content-box">
-            <h2 id="home" class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Home</h2>
-            <section class="text-lg leading-relaxed space-y-4">
-                <h3 class="text-2xl font-semibold text-indigo-500 dark:text-indigo-300">Welcome to NetPro Learning Center</h3>
-                <p>Your gateway to mastering networking skills. Explore our courses and resources to enhance your knowledge and career prospects in the networking field.</p>
-                <p>At NetPro Learning Center, we are committed to providing high-quality networking education that empowers individuals to succeed in the ever-evolving world of technology.</p>
-                <p>Whether you are a beginner looking to start your networking journey or an experienced professional seeking to upgrade your skills, we have the right courses and resources for you.</p>
-                <p>Join us today and take the first step towards a successful career in networking!</p>
-            </section>
-        </main>
-    </div>
+  <!-- Page Content -->
+  <div class="p-8">
+    <main>
+      <header>
+        <nav class="flex flex-col sm:flex-row justify-between items-center bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 text-gray-900 dark:text-white p-4 rounded-lg shadow-xl mb-8">
+          <h1 class="text-3xl font-bold text-indigo-700 dark:text-indigo-400">NetPro Learning Center</h1>
+          <ul class="flex flex-wrap justify-center sm:justify-end gap-4 mt-4 sm:mt-0">
+            <li><a href="#home" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">Home</a></li>
+            <li><a href="#about" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">About Us</a></li>
+            <li><a href="#services" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">Services</a></li>
+            <li><a href="#review" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">Reviews</a></li>
+            <li><a href="#contact" class="px-4 py-2 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white">Contact Us</a></li>
+          </ul>
+        </nav>
+      </header>
+    </main>
+  </div>
 
-    <div id="box3" class="p-8">
-        <main class="content-box">
-            <h2 id="about" class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">About Us</h2>
-            <section class="text-lg leading-relaxed space-y-4">
-                <p>At NetPro Learning Center, we are dedicated to providing top-notch networking education. Our experienced instructors and comprehensive curriculum ensure that you gain the knowledge and skills needed to excel in the field of networking.</p>
-                <p>We offer a range of courses covering various aspects of networking, including network design, security, and management.</p>
-                <p>Our mission is to empower individuals with the skills and knowledge required to thrive in the networking industry. We believe in hands-on learning and practical experience, which is why our courses include real-world scenarios and projects.</p>
-                <p>Whether you are looking to start a new career or advance in your current role, NetPro Learning Center is here to support you every step of the way.</p>
-                <p>Join our community of networking professionals and take your skills to the next level!</p>
-                <p>We are located in Ambala, Haryana, and offer both online and in-person classes to accommodate your learning preferences.</p>
-            </section>
-        </main>
-    </div>
+  <!-- Section Boxes -->
+  <div id="home" class="p-8"><main class="content-box"><h2 class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Home</h2><section class="text-lg leading-relaxed space-y-4">...</section></main></div>
+  <div id="about" class="p-8"><main class="content-box"><h2 class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">About Us</h2><section class="text-lg leading-relaxed space-y-4">...</section></main></div>
+  <div id="services" class="p-8"><main class="content-box"><h2 class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Services</h2><section class="text-lg leading-relaxed space-y-4"><ul class="list-disc list-inside space-y-2"><li>Online Courses</li><li>Workshops</li><li>Mentoring</li><li>Certification Preparation</li><li>Internship</li><li>Networking Events</li></ul></section></main></div>
+  <div id="review" class="p-8"><main class="content-box"><h2 class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Reviews</h2><section class="text-lg leading-relaxed space-y-4">...</section></main></div>
+  <div id="contact" class="p-8"><main class="content-box"><h2 class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Contact Us</h2><section class="text-lg leading-relaxed space-y-4">...</section></main></div>
 
-    <div id="box4" class="p-8">
-        <main class="content-box">
-            <h2 id="services" class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Services</h2>
-            <section class="text-lg leading-relaxed space-y-4">
-                <p>We offer a variety of services including online courses, workshops, and one-on-one mentoring sessions to help you achieve your networking goals.</p>
-                <ul class="list-disc list-inside space-y-2">
-                    <li>Online Courses: Flexible learning at your own pace.</li>
-                    <li>Workshops: Hands-on experience with real-world scenarios.</li></li>
-                    <li>Mentoring: Personalized guidance from industry experts.</li>
-                    <li>Certification Preparation: Get ready for industry-recognized certifications.</li>
-                    <li>Internship: Gain practical experience through our internship programs.</li>
-                    <li>Networking Events: Connect with professionals and expand your network.</li>
-                </ul>
-            </section>
-        </main>
-    </div>
+  <!-- Footer -->
+  <footer class="text-center text-sm py-4 rounded-lg shadow-xl bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 text-gray-400 dark:text-gray-600">
+    <p>&copy; <span id="year"></span> NetPro Learning Center. All rights reserved.</p>
+    <p>Designed by NetPro Learning Center Team</p>
+    <p><a href="#" class="hover:underline">Privacy Policy</a> | <a href="#" class="hover:underline">Terms of Service</a></p>
+  </footer>
 
-    <div id="box5" class="p-8">
-        <main class="content-box">
-            <h2 id="review" class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Reviews</h2>
-            <section class="text-lg leading-relaxed space-y-4">
-                <p>We take pride in the positive feedback we receive from our students. Here are some testimonials from those who have benefited from our courses:</p>
-                <h3 class="text-2xl font-semibold text-indigo-500 dark:text-indigo-300">Student Testimonials</h3>
-                <p>Hear from our satisfied students who have successfully completed our courses and advanced their careers in networking.</p>
-                <ul class="list-disc list-inside space-y-2">
-                    <li>"The courses at NetPro Learning Center were instrumental in my career growth!" - Ankit Sharma</li>
-                    <li>"I learned so much about networking protocols and configurations." - Rahul Roy</li>
-                    <li>"The instructors are knowledgeable and supportive." - Meena Saini</li>
-                    <li>"I highly recommend their certification preparation courses." - Priya Verma</li>
-                    <li>"The hands-on workshops were incredibly helpful." - Rohan Gupta</li>
-                    <li>"NetPro Learning Center provided me with the skills I needed to excel in my job." - Sita Patel</li>
-                </ul>
-            </section>
-        </main>
-    </div>
+  <!-- Scripts -->
+  <script>
+    window.onload = function () {
+      const container = document.getElementById('canvas-container');
+      let scene, camera, renderer, icosahedron, animationFrameId;
+      let isDarkMode = false;
 
-    <div id="box6" class="p-8">
-        <main class="content-box">
-            <h2 id="contact" class="text-4xl font-bold text-center mb-4 text-indigo-700 dark:text-indigo-400">Contact Us</h2>
-            <section class="text-lg leading-relaxed space-y-4">
-                <p>If you have any questions or need further information, feel free to reach out to us through our contact page.</p>
-                <p>We are here to assist you with any inquiries you may have regarding our courses, services, or general networking topics.</p>
-                <p>For inquiries, please contact us at:</p>
-                <p>Email: <a href="mailto:netprolearning@gmail.com" class="text-indigo-500 dark:text-indigo-300 hover:underline">netprolearning@gmail.com</a></p>
-                <p>Phone: +91 12345 67890</p>
-                <p>Address: NetPro Learning Center, Sector 17, Ambala, Haryana</p>
-                <p>We look forward to hearing from you!</p>
-                <p>Follow us on social media for updates and announcements:</p>
-                <ul class="flex justify-center gap-4 mt-4">
-                    <li><a href="https://www.facebook.com/netprolearning" class="text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Facebook</a></li>
-                    <li><a href="https://www.twitter.com/netprolearning" class="text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Twitter</a></li>
-                    <li><a href="https://www.instagram.com/netprolearning" class="text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Instagram</a></li>
-                    <li><a href="https://www.linkedin.com/company/netprolearning" class="text-indigo-500 dark:text-indigo-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">LinkedIn</a></li>
-                </ul>
-            </section>
-        </main>
-    </div>
+      function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 2;
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        const geometry = new THREE.IcosahedronGeometry(1, 1);
+        const material = new THREE.MeshPhongMaterial({
+          color: 0x8a2be2, wireframe: true, emissive: 0x6a0dad, emissiveIntensity: 0.8
+        });
+        icosahedron = new THREE.Mesh(geometry, material);
+        scene.add(icosahedron);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(0, 1, 1).normalize();
+        scene.add(ambientLight);
+        scene.add(directionalLight);
+        window.addEventListener('resize', () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        applyThemeFromLocalStorage();
+      }
 
-    <div id="box7" class="p-8">
-        <main>
-            <footer class="text-center text-sm py-4 rounded-lg shadow-xl bg-white bg-opacity-70 dark:bg-gray-800 dark:bg-opacity-70 text-gray-400 dark:text-gray-600">
-                <p>&copy; 2023 NetPro Learning Center. All rights reserved.</p>
-                <p>Designed by NetPro Learning Center Team</p>
-                <p><a href="#" class="hover:underline">Privacy Policy</a> | <a href="#" class="hover:underline">Terms of Service</a></p>
-            </footer>
-        </main>
-    </div>
+      function animate() {
+        animationFrameId = requestAnimationFrame(animate);
+        icosahedron.rotation.x += 0.005;
+        icosahedron.rotation.y += 0.005;
+        renderer.render(scene, camera);
+      }
 
-    <script>
-        window.onload = function() {
-            // Three.js Scene Setup
-            const container = document.getElementById('canvas-container');
-            let scene, camera, renderer, icosahedron, ambientLight, directionalLight;
-            let isDarkMode = false;
-            let animationFrameId;
+      function updateObjectColor() {
+        if (isDarkMode) {
+          icosahedron.material.color.setHex(0x8a2be2);
+          icosahedron.material.emissive.setHex(0x6a0dad);
+        } else {
+          icosahedron.material.color.setHex(0x3e28c7);
+          icosahedron.material.emissive.setHex(0x1a0dad);
+        }
+      }
 
-            function init() {
-                // Scene
-                scene = new THREE.Scene();
-                
-                // Camera
-                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                camera.position.z = 2;
-                
-                // Renderer
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(window.innerWidth, window.innerHeight);
-                container.appendChild(renderer.domElement);
-                
-                // Geometry and Material for the 3D object
-                const geometry = new THREE.IcosahedronGeometry(1, 1);
-                const material = new THREE.MeshPhongMaterial({
-                    color: 0x8a2be2,
-                    wireframe: true,
-                    emissive: 0x6a0dad,
-                    emissiveIntensity: 0.8
-                });
-                icosahedron = new THREE.Mesh(geometry, material);
-                scene.add(icosahedron);
-                
-                // Lights
-                ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-                scene.add(ambientLight);
-                
-                directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-                directionalLight.position.set(0, 1, 1).normalize();
-                scene.add(directionalLight);
+      document.getElementById('toggle3DButton').addEventListener('click', () => {
+        const canvas = container.querySelector('canvas');
+        if (canvas.style.display === 'none' || canvas.style.display === '') {
+          canvas.style.display = 'block';
+          animate();
+        } else {
+          canvas.style.display = 'none';
+          cancelAnimationFrame(animationFrameId);
+        }
+      });
 
-                // Resize handler
-                window.addEventListener('resize', onWindowResize, false);
+      const toggleThemeButton = document.getElementById('toggleThemeButton');
+      const body = document.body;
+      const sunPath = document.getElementById('sun-path');
+      const moonPath = document.getElementById('moon-path');
 
-                // Apply initial theme
-                applyThemeFromLocalStorage();
-            }
-            
-            function onWindowResize() {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          body.classList.add('dark');
+          isDarkMode = true;
+          sunPath.classList.add('hidden');
+          moonPath.classList.remove('hidden');
+        } else {
+          body.classList.remove('dark');
+          isDarkMode = false;
+          sunPath.classList.remove('hidden');
+          moonPath.classList.add('hidden');
+        }
+        updateObjectColor();
+        localStorage.setItem('theme', theme);
+      }
 
-            // Animation loop
-            function animate() {
-                animationFrameId = requestAnimationFrame(animate);
-                
-                // Rotate the icosahedron
-                icosahedron.rotation.x += 0.005;
-                icosahedron.rotation.y += 0.005;
-                
-                renderer.render(scene, camera);
-            }
-            
-            // Function to update the 3D object's color based on the theme
-            function updateObjectColor() {
-                if (isDarkMode) {
-                    icosahedron.material.color.setHex(0x8a2be2);
-                    icosahedron.material.emissive.setHex(0x6a0dad);
-                } else {
-                    icosahedron.material.color.setHex(0x3e28c7);
-                    icosahedron.material.emissive.setHex(0x1a0dad);
-                }
-            }
+      function applyThemeFromLocalStorage() {
+        const savedTheme = localStorage.getItem('theme');
+        applyTheme(savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      }
 
-            // Toggle 3D button functionality
-            const toggle3DButton = document.getElementById('toggle3DButton');
-            toggle3DButton.addEventListener('click', () => {
-                const canvas = container.querySelector('canvas');
-                if (canvas.style.display === 'none' || canvas.style.display === '') {
-                    canvas.style.display = 'block';
-                    toggle3DButton.textContent = 'Toggle 3D';
-                    if (!animationFrameId) {
-                        animate();
-                    }
-                } else {
-                    canvas.style.display = 'none';
-                    toggle3DButton.textContent = 'Show 3D';
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-            });
+      toggleThemeButton.addEventListener('click', () => {
+        applyTheme(body.classList.contains('dark') ? 'light' : 'dark');
+      });
 
-            // Toggle theme button functionality
-            const toggleThemeButton = document.getElementById('toggleThemeButton');
-            const body = document.body;
-            const sunPath = document.getElementById('sun-path');
-            const moonPath = document.getElementById('moon-path');
+      // Animate sections on scroll
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('opacity-100', 'translate-y-0');
+          }
+        });
+      }, { threshold: 0.1 });
 
-            function applyTheme(theme) {
-                if (theme === 'dark') {
-                    body.classList.add('dark');
-                    isDarkMode = true;
-                    sunPath.classList.add('hidden');
-                    moonPath.classList.remove('hidden');
-                } else {
-                    body.classList.remove('dark');
-                    isDarkMode = false;
-                    sunPath.classList.remove('hidden');
-                    moonPath.classList.add('hidden');
-                }
-                updateObjectColor();
-                localStorage.setItem('theme', theme);
-            }
-            
-            function applyThemeFromLocalStorage() {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    applyTheme(savedTheme);
-                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    applyTheme('dark');
-                } else {
-                    applyTheme('light');
-                }
-            }
+      document.querySelectorAll('.content-box').forEach(box => {
+        box.classList.add('opacity-0', 'translate-y-8', 'transition-all', 'duration-700');
+        observer.observe(box);
+      });
 
-            toggleThemeButton.addEventListener('click', () => {
-                if (body.classList.contains('dark')) {
-                    applyTheme('light');
-                } else {
-                    applyTheme('dark');
-                }
-            });
+      document.getElementById('year').textContent = new Date().getFullYear();
 
-            // Initialize and start the animation
-            init();
-            animate();
-        };
-    </script>
+      init();
+      animate();
+    };
+  </script>
 </body>
 </html>
