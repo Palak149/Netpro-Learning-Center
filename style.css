@@ -74,6 +74,17 @@ body {
   transform: translateY(-2px);
 }
 
+/* Burger Menu Button */
+.burger-menu {
+  display: none; /* Hidden by default on larger screens */
+  background: none;
+  border: none;
+  color: var(--light-text);
+  font-size: 1.8em;
+  cursor: pointer;
+  padding: 10px;
+}
+
 /* Button Styles */
 .btn {
   display: inline-block;
@@ -445,17 +456,54 @@ hr {
 /* Responsive Design */
 @media (max-width: 768px) {
   .main-header .container {
-      flex-direction: column;
-      text-align: center;
+      flex-direction: row; /* Keep elements in a row */
+      justify-content: space-between; /* Space out title and burger */
+      align-items: center;
   }
 
-  .site-title {
-      margin-bottom: 15px;
+  .main-nav {
+      display: none; /* Hide navigation by default */
+      width: 100%; /* Take full width when shown */
+      flex-direction: column;
+      background-color: var(--primary-color);
+      position: absolute;
+      top: 70px; /* Adjust based on header height */
+      left: 0;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding-bottom: 10px;
+  }
+
+  .main-nav.active {
+      display: flex; /* Show navigation when active */
   }
 
   .main-nav ul {
       flex-direction: column;
-      gap: 15px;
+      gap: 0; /* Remove gap for vertical stacking */
+      padding: 0;
+  }
+
+  .main-nav li {
+      width: 100%;
+      text-align: center;
+  }
+
+  .main-nav a {
+      display: block;
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .main-nav li:last-child a {
+      border-bottom: none;
+  }
+
+  .burger-menu {
+      display: block; /* Show burger menu button */
+  }
+
+  .site-title {
+      margin-bottom: 0; /* Remove margin from title */
   }
 
   .hero-section .container {
